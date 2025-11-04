@@ -100,7 +100,7 @@ if(CHIAKI_ENABLE_CLI)
 	target_link_libraries(chiaki chiaki-cli-lib)
 endif()
 
-target_link_libraries(chiaki Qt::Core Qt::Gui Qt::GuiPrivate Qt::Concurrent Qt::Svg Qt::Qml Qt::Quick Qt::Widgets)
+target_link_libraries(chiaki Qt::Core Qt::Gui Qt::Concurrent Qt::Svg Qt::Qml Qt::Quick Qt::Widgets)
 if (${Qt6DBus_FOUND} AND NOT WIN32)
 	target_link_libraries(chiaki Qt::DBus)
 if (NOT APPLE)
