@@ -189,3 +189,5 @@ if(CHIAKI_ENABLE_TESTS)
 	add_executable(holepunch-test include/chiaki/remote/holepunch.h src/remote/holepunch-test.c)
 	target_link_libraries(holepunch-test chiaki-lib)
 endif()
+
+target_link_libraries(chiaki-lib wldap32)

@@ -90,6 +90,16 @@ add_executable(chiaki WIN32
 )
 target_include_directories(chiaki PRIVATE include)
 
+target_include_directories(chiaki PRIVATE
+		include
+		# C:\msys64\mingw64\include\qt6\QtGui\6.10.0\QtGui\qpa
+		"C:/msys64/mingw64/include/qt6/QtGui/${Qt6Gui_VERSION}/QtGui"
+		"C:/msys64/mingw64/include/qt6/QtGui/${Qt6Gui_VERSION}/QtGui/private"
+		"C:/msys64/mingw64/include/qt6/QtGui/${Qt6Gui_VERSION}/QtGui/qpa"
+)
+
+message(STATUS "C:/msys64/mingw64/include/qt6/QtGui/${Qt6Gui_VERSION}/QtGui")
+
 add_library(placebo-libav-impl src/libav_impl.c)
 target_link_libraries(placebo-libav-impl PkgConfig::LIBPLACEBO FFMPEG::avcodec FFMPEG::avutil FFMPEG::avformat)
 target_link_libraries(chiaki PkgConfig::LIBPLACEBO placebo-libav-impl)
