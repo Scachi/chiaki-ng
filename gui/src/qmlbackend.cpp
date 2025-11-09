@@ -1490,7 +1490,7 @@ void QmlBackend::setAllowJoystickBackgroundEvents()
 
 void QmlBackend::setSelectedController()
 {
-    ControllerManager::GetInstance()->SetSelectedController(settings->GetSelectedControllerGUIDSaved());
+    ControllerManager::GetInstance()->SetSelectedControllerGUID(settings->GetSelectedControllerGUIDSaved());
 }
 
 

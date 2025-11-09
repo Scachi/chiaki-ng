@@ -1705,6 +1705,7 @@ void QmlSettings::refreshAllKeys()
     emit rumbleHapticsIntensityChanged();
     emit buttonsByPositionChanged();
     emit allowJoystickBackgroundEventsChanged();
+    emit selectedControllerGUIDSavedChanged();
     emit startMicUnmutedChanged();
     emit showStreamStatsChanged();
     emit streamerModeChanged();

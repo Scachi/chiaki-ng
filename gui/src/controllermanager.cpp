@@ -177,7 +177,7 @@ void ControllerManager::SetAllowJoystickBackgroundEvents(bool enabled)
 	this->joystick_allow_background_events = enabled;
 }
 
-void ControllerManager::SetSelectedController(QString guid)
+void ControllerManager::SetSelectedControllerGUID(QString guid)
 {
 	this->selectedControllerGUID = guid;
 }

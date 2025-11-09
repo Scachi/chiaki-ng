@@ -257,9 +257,6 @@ class Settings : public QObject
 		bool GetAllowJoystickBackgroundEvents() const { return settings.value("settings/allow_joystick_background_events", true).toBool(); }
 		void SetAllowJoystickBackgroundEvents(bool enabled) { settings.setValue("settings/allow_joystick_background_events", enabled); }
 
-		QString GetSelectedControllerGUIDSaved() const { return settings.value("settings/selectedControllerGUIDSaved", "").toString(); }
-		void SetSelectedControllerGUIDSaved(QString guid) { settings.setValue("settings/selectedControllerGUIDSaved", guid); }
-
 		bool GetStartMicUnmuted() const          { return settings.value("settings/start_mic_unmuted", false).toBool(); }
 		void SetStartMicUnmuted(bool unmuted) { return settings.setValue("settings/start_mic_unmuted", unmuted); }
 
@@ -439,6 +436,10 @@ class Settings : public QObject
 
 		QString GetTimeFormat() const     { return time_format; }
 		void ClearKeyMapping();
+
+		// Selected controller GUID that is saved/restored
+		QString GetSelectedControllerGUIDSaved() const { return settings.value("settings/selected_controller_guid_saved", "").toString(); }
+		void SetSelectedControllerGUIDSaved(QString guid) { settings.setValue("settings/selected_controller_guid_saved", guid); }
 
 #if CHIAKI_GUI_ENABLE_SPEEX
 		bool GetSpeechProcessingEnabled() const;

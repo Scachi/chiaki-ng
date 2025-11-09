@@ -2195,29 +2195,32 @@ DialogView {
                                 Layout.alignment: Qt.AlignRight
                                 text: qsTr("Use controller:")
                             }
-                            // parallel GUID array for identifying items
-                            property var controllerGuids: (typeof Chiaki.controllers !== "undefined") ?
-                                [ "" ].concat(Chiaki.controllers.map(function(c) { return c.guid ? c.guid : ""; })) : [ "" ]
-
 
                             C.ComboBox {
                                 id: controllersSelection
                                 Layout.preferredWidth: 400
 
                                 model: (typeof Chiaki.controllers !== "undefined") ?
-                                    [ qsTr("Any") ].concat(Chiaki.controllers.map(function(c) {
+                                    [qsTr("Any")].concat(Chiaki.controllers.map(function (c) {
                                         return c.name ? c.name : qsTr("unknown");
-                                    })) : [ qsTr("Any") ]
+                                    })) : [qsTr("Any")]
 
-                                // compute currentIndex from stored GUID (falls back to 0 = "Any")
+                                // compute currentIndex from stored GUID (falls back to 0 = "Any"). Build GUID list on demand
                                 currentIndex: (typeof Chiaki.settings !== "undefined" && typeof Chiaki.settings.selectedControllerGUIDSaved !== "undefined") ?
-                                    Math.max(0, controllerGuids.indexOf(Chiaki.settings.selectedControllerGUIDSaved)) : 0
+                                    (function () {
+                                        if (typeof Chiaki.controllers === "undefined") return 0;
+                                        var guids = [""];
+                                        for (var i = 0; i < Chiaki.controllers.length; ++i) guids.push(Chiaki.controllers[i].guid ? Chiaki.controllers[i].guid : "");
+                                        return Math.max(0, guids.indexOf(Chiaki.settings.selectedControllerGUIDSaved));
+                                    })() : 0
 
                                 onActivated: (index) => {
                                     if (typeof Chiaki.settings !== "undefined") {
-                                        // update transient selection (applied immediately)
-                                        Chiaki.settings.selectedControllerGUID = controllerGuids[index] ? controllerGuids[index] : "";
-                                        // selectedControllerIndex represents index into Chiaki.controllers (so -1 for Any)
+                                        // compute GUID from current controllers list (index 0 = Any -> -1)
+                                        var guid = "";
+                                        if (index > 0 && typeof Chiaki.controllers !== "undefined" && Chiaki.controllers.length >= index)
+                                            guid = Chiaki.controllers[index - 1].guid ? Chiaki.controllers[index - 1].guid : "";
+                                        Chiaki.settings.selectedControllerGUID = guid;
                                         Chiaki.settings.selectedControllerIndex = (index > 0) ? index - 1 : -1;
                                     }
                                 }
@@ -2229,11 +2232,35 @@ DialogView {
                                 Material.roundedScale: Material.SmallScale
                                 onClicked: {
                                     // save the currently-selected controller GUID permanently
-                                    var selIndex = controllersSelection.currentIndex;
-                                    Chiaki.settings.selectedControllerGUIDSaved = controllerGuids[selIndex] ? controllerGuids[selIndex] : "";
+                                    try {
+                                        var selIndex = (typeof controllersSelection !== "undefined" && typeof controllersSelection.currentIndex === "number") ? controllersSelection.currentIndex : 0;
+                                        if (selIndex < 0) selIndex = 0;
+                                        var guid = "";
+                                        if (selIndex > 0 && typeof Chiaki.controllers !== "undefined" && Chiaki.controllers.length >= selIndex)
+                                            guid = Chiaki.controllers[selIndex - 1].guid ? Chiaki.controllers[selIndex - 1].guid : "";
+
+                                        if (typeof Chiaki !== "undefined" && typeof Chiaki.settings !== "undefined") {
+                                            Chiaki.settings.selectedControllerGUIDSaved = guid;
+                                        } else {
+                                            // If we can't save, show a message but continue to show the dialog
+                                            console.warn("Chiaki.settings is undefined - cannot persist selectedControllerGUIDSaved");
+                                        }
+
+                                        // show popup with the value (fallback to "(empty)")
+                                        var msg = guid && guid.length ? guid : qsTr("(empty)");
+                                        // use arrow callback to avoid scope issues; empty callback is fine for informational dialog
+                                        root.showConfirmDialog(qsTr("Saved Controller GUID"), msg, () => {
+                                        });
+                                    } catch (e) {
+                                        // If something unexpected happened, still show an error message
+                                        console.error(e);
+                                        root.showConfirmDialog(qsTr("Saved Controller GUID"), qsTr("(error saving)") + "\n" + e.toString(), () => {
+                                        });
+                                    }
                                 }
                             }
                         }
+
                         C.Button {
                             sendOutput: true
                             Layout.alignment: Qt.AlignHCenter
@@ -2520,7 +2547,7 @@ DialogView {
                                         if(parent.value > 0.99 && parent.value < 1.01)
                                             qsTr("console setting")
                                         else
-                                            (parent.value * 100).toFixed(0) + qsTr(" % console setting")
+                                                (parent.value * 100).toFixed(0) + qsTr(" % console setting")
                                     }
                                 }
                             }
@@ -2550,7 +2577,7 @@ DialogView {
                     Label {
                         text: {
                             if(Chiaki.settings.currentProfile)
-                                qsTr("Current Profile: ") + Chiaki.settings.currentProfile
+                                    qsTr("Current Profile: ") + Chiaki.settings.currentProfile
                             else
                                 qsTr("Current Profile: default")
                         }

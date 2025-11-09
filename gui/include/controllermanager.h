@@ -56,7 +56,7 @@ class ControllerManager : public QObject
 		~ControllerManager();
 		void SetButtonsByPos();
 		void SetAllowJoystickBackgroundEvents(bool enabled);
-		void SetSelectedController(QString guid);
+		void SetSelectedControllerGUID(QString guid);
 		void SetIsAppActive(bool active);
 		void SetDualSenseIntensity(uint8_t intensity) { dualsense_intensity = intensity; };
 		uint8_t GetDualSenseIntensity() { return dualsense_intensity; };
