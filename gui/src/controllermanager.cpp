@@ -323,6 +323,30 @@ void ControllerManager::ControllerEvent(SDL_Event event)
 		default:
 			return;
 	}
+
+	// If a specific controller GUID is selected, only process events for that controller's device id
+	if(!selectedControllerGUID.isEmpty())
+	{
+		int selectedDeviceId = -1;
+		for(auto it = open_controllers.constBegin(); it != open_controllers.constEnd(); ++it)
+		{
+			Controller *ctrl = it.value();
+			if(!ctrl)
+				continue;
+			// Compare GUID strings; if they match, remember the device id
+			if(ctrl->GetGUIDString() == selectedControllerGUID)
+			{
+				selectedDeviceId = it.key();
+				break;
+			}
+		}
+		// If we couldn't find the selected GUID among open controllers, don't process any events
+		if(selectedDeviceId == -1)
+			return;
+		if(selectedDeviceId != device_id)
+			return;
+	}
+
 	if(!open_controllers.contains(device_id))
 		return;
 	if(creating_controller_mapping && start_updating_mapping)
