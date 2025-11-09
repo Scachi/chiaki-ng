@@ -2187,6 +2187,39 @@ DialogView {
                             horizontalCenter: parent.horizontalCenter
                         }
                         spacing: 10
+                        // Added: controllers selection combo box and refresh button above mapping buttons
+                        RowLayout {
+                            spacing: 10
+                            Layout.alignment: Qt.AlignHCenter
+                            Label {
+                                Layout.alignment: Qt.AlignRight
+                                text: qsTr("Use controller:")
+                            }
+                            C.ComboBox {
+                                id: controllersSelection
+                                Layout.preferredWidth: 400
+                                model: (typeof Chiaki.controllers !== "undefined") ?
+                                    [ qsTr("Any") ].concat(Chiaki.controllers.map(function(c) {
+                                        return c.name ? c.name : qsTr("unknown");
+                                    })) : [ qsTr("Any") ]
+                                currentIndex: (typeof Chiaki.settings !== "undefined" && typeof Chiaki.settings.selectedControllerIndex !== "undefined") ?
+                                    (Chiaki.settings.selectedControllerIndex >= 0 ? Chiaki.settings.selectedControllerIndex + 1 : 0) : 0
+                                onActivated: (index) => {
+                                    if (typeof Chiaki.settings !== "undefined") {
+                                        Chiaki.settings.selectedControllerIndex = (index > 0) ? index - 1 : -1;
+                                    }
+                                }
+                            }
+
+                            C.Button {
+                                id: controllersRefresh
+                                text: qsTr("Refresh")
+                                Material.roundedScale: Material.SmallScale
+                                onClicked: {
+                                    controllersSelection.currentIndex = 0;
+                                }
+                            }
+                        }
                         C.Button {
                             sendOutput: true
                             Layout.alignment: Qt.AlignHCenter

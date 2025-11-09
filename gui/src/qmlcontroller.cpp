@@ -111,6 +111,11 @@ QString QmlController::GetVIDPID() const
     return controller->GetVIDPIDString();
 }
 
+QString QmlController::GetName() const
+{
+    return controller->GetVIDPIDString();
+}
+
 void QmlController::sendKey(Qt::Key key, Qt::KeyboardModifiers modifiers)
 {
     QKeyEvent press(QEvent::KeyPress, key, modifiers);

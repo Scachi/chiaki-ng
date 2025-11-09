@@ -12,6 +12,9 @@ class QmlController : public QObject
     Q_PROPERTY(bool steamVirtual READ isSteamVirtual CONSTANT)
     Q_PROPERTY(bool dualSenseEdge READ isDualSenseEdge CONSTANT)
     Q_PROPERTY(bool playStation READ isPS CONSTANT)
+    Q_PROPERTY(QString name READ name CONSTANT)
+    Q_PROPERTY(QString vidpid READ vidpid CONSTANT)
+    Q_PROPERTY(QString guid READ guid CONSTANT)
 
 public:
     QmlController(Controller *controller, uint32_t shortcut, QObject *target, QObject *parent = nullptr);
@@ -23,8 +26,14 @@ public:
     bool isDualSenseEdge() const;
     bool isPS() const;
     void setEscapeShortcut(uint32_t shortcut) { escape_shortcut = shortcut; };
+    QString GetName() const;
     QString GetGUID() const;
     QString GetVIDPID() const;
+
+    // Exposed properties
+    QString name() const { return GetName(); }
+    QString vidpid() const { return GetVIDPID(); }
+    QString guid() const { return GetGUID(); }
 
 private:
     void sendKey(Qt::Key key, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
