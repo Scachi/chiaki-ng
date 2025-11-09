@@ -146,6 +146,8 @@ QmlBackend::QmlBackend(Settings *settings, QmlMainWindow *window)
     connect(settings_qml, &QmlSettings::allowJoystickBackgroundEventsChanged, this, &QmlBackend::setAllowJoystickBackgroundEvents);
     connect(window, &QmlMainWindow::activeChanged, this, &QmlBackend::setIsAppActive);
     setAllowJoystickBackgroundEvents();
+    connect(settings_qml, &QmlSettings::selectedControllerGUIDSavedChanged, this, &QmlBackend::setSelectedController);
+    setSelectedController();
     setIsAppActive();
     ControllerManager::GetInstance()->SetIsAppActive(window->isActive());
     updateControllers();
@@ -1485,6 +1487,12 @@ void QmlBackend::setAllowJoystickBackgroundEvents()
 {
     ControllerManager::GetInstance()->SetAllowJoystickBackgroundEvents(settings->GetAllowJoystickBackgroundEvents());
 }
+
+void QmlBackend::setSelectedController()
+{
+    ControllerManager::GetInstance()->SetSelectedController(settings->GetSelectedControllerGUIDSaved());
+}
+
 
 void QmlBackend::setIsAppActive()
 {

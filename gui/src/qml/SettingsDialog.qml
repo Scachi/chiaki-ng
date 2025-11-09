@@ -2210,12 +2210,14 @@ DialogView {
                                     })) : [ qsTr("Any") ]
 
                                 // compute currentIndex from stored GUID (falls back to 0 = "Any")
-                                currentIndex: (typeof Chiaki.settings !== "undefined" && typeof Chiaki.settings.selectedControllerGUID !== "undefined") ?
+                                currentIndex: (typeof Chiaki.settings !== "undefined" && typeof Chiaki.settings.selectedControllerGUIDSaved !== "undefined") ?
                                     Math.max(0, controllerGuids.indexOf(Chiaki.settings.selectedControllerGUIDSaved)) : 0
 
                                 onActivated: (index) => {
                                     if (typeof Chiaki.settings !== "undefined") {
+                                        // update transient selection (applied immediately)
                                         Chiaki.settings.selectedControllerGUID = controllerGuids[index] ? controllerGuids[index] : "";
+                                        // selectedControllerIndex represents index into Chiaki.controllers (so -1 for Any)
                                         Chiaki.settings.selectedControllerIndex = (index > 0) ? index - 1 : -1;
                                     }
                                 }
@@ -2226,7 +2228,9 @@ DialogView {
                                 text: qsTr("Save")
                                 Material.roundedScale: Material.SmallScale
                                 onClicked: {
-                                    Chiaki.settings.selectedControllerGUIDSaved = controllerGuids[index] ? controllerGuids[index] : "";
+                                    // save the currently-selected controller GUID permanently
+                                    var selIndex = controllersSelection.currentIndex;
+                                    Chiaki.settings.selectedControllerGUIDSaved = controllerGuids[selIndex] ? controllerGuids[selIndex] : "";
                                 }
                             }
                         }

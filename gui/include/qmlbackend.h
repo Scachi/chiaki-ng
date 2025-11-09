@@ -163,6 +163,7 @@ public:
     bool closeRequested();
 
     void setAllowJoystickBackgroundEvents();
+    void setSelectedController();
 
     void setIsAppActive();
 

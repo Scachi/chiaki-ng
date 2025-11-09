@@ -37,6 +37,7 @@ class ControllerManager : public QObject
 		bool is_app_active;
 		bool moved;
 		uint8_t dualsense_intensity;
+		QString selectedControllerGUID;
 
 		void ControllerClosed(Controller *controller);
 		void CheckMoved();
@@ -55,6 +56,7 @@ class ControllerManager : public QObject
 		~ControllerManager();
 		void SetButtonsByPos();
 		void SetAllowJoystickBackgroundEvents(bool enabled);
+		void SetSelectedController(QString guid);
 		void SetIsAppActive(bool active);
 		void SetDualSenseIntensity(uint8_t intensity) { dualsense_intensity = intensity; };
 		uint8_t GetDualSenseIntensity() { return dualsense_intensity; };
