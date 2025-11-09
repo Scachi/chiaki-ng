@@ -113,7 +113,7 @@ QString QmlController::GetVIDPID() const
 
 QString QmlController::GetName() const
 {
-    return controller->GetVIDPIDString();
+    return controller->GetName();
 }
 
 void QmlController::sendKey(Qt::Key key, Qt::KeyboardModifiers modifiers)

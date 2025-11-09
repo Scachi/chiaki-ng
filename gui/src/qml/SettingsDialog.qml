@@ -2187,7 +2187,7 @@ DialogView {
                             horizontalCenter: parent.horizontalCenter
                         }
                         spacing: 10
-                        // Added: controllers selection combo box and refresh button above mapping buttons
+                        // Added: controllers selection combo box and save button
                         RowLayout {
                             spacing: 10
                             Layout.alignment: Qt.AlignHCenter
@@ -2195,28 +2195,38 @@ DialogView {
                                 Layout.alignment: Qt.AlignRight
                                 text: qsTr("Use controller:")
                             }
+                            // parallel GUID array for identifying items
+                            property var controllerGuids: (typeof Chiaki.controllers !== "undefined") ?
+                                [ "" ].concat(Chiaki.controllers.map(function(c) { return c.guid ? c.guid : ""; })) : [ "" ]
+
+
                             C.ComboBox {
                                 id: controllersSelection
                                 Layout.preferredWidth: 400
+
                                 model: (typeof Chiaki.controllers !== "undefined") ?
                                     [ qsTr("Any") ].concat(Chiaki.controllers.map(function(c) {
                                         return c.name ? c.name : qsTr("unknown");
                                     })) : [ qsTr("Any") ]
-                                currentIndex: (typeof Chiaki.settings !== "undefined" && typeof Chiaki.settings.selectedControllerIndex !== "undefined") ?
-                                    (Chiaki.settings.selectedControllerIndex >= 0 ? Chiaki.settings.selectedControllerIndex + 1 : 0) : 0
+
+                                // compute currentIndex from stored GUID (falls back to 0 = "Any")
+                                currentIndex: (typeof Chiaki.settings !== "undefined" && typeof Chiaki.settings.selectedControllerGUID !== "undefined") ?
+                                    Math.max(0, controllerGuids.indexOf(Chiaki.settings.selectedControllerGUIDSaved)) : 0
+
                                 onActivated: (index) => {
                                     if (typeof Chiaki.settings !== "undefined") {
+                                        Chiaki.settings.selectedControllerGUID = controllerGuids[index] ? controllerGuids[index] : "";
                                         Chiaki.settings.selectedControllerIndex = (index > 0) ? index - 1 : -1;
                                     }
                                 }
                             }
 
                             C.Button {
-                                id: controllersRefresh
-                                text: qsTr("Refresh")
+                                id: controllersSelectedSave
+                                text: qsTr("Save")
                                 Material.roundedScale: Material.SmallScale
                                 onClicked: {
-                                    controllersSelection.currentIndex = 0;
+                                    Chiaki.settings.selectedControllerGUIDSaved = controllerGuids[index] ? controllerGuids[index] : "";
                                 }
                             }
                         }
