@@ -2200,10 +2200,31 @@ DialogView {
                                 id: controllersSelection
                                 Layout.preferredWidth: 400
 
-                                model: (typeof Chiaki.controllers !== "undefined") ?
-                                    [qsTr("Any")].concat(Chiaki.controllers.map(function (c) {
-                                        return c.name ? c.name : qsTr("unknown");
-                                    })) : [qsTr("Any")]
+                                model: (function() {
+                                    var list = [qsTr("Any")];
+                                    if (typeof Chiaki.controllers !== "undefined") {
+                                        for (var i = 0; i < Chiaki.controllers.length; ++i)
+                                            list.push(Chiaki.controllers[i].name ? Chiaki.controllers[i].name : qsTr("unknown"));
+                                    }
+
+                                    // If there's a saved GUID which isn't part of the current controllers list,
+                                    // append a human-readable entry so the user can still see/select it.
+                                    var savedGuid = (typeof Chiaki.settings !== "undefined" && typeof Chiaki.settings.selectedControllerGUIDSaved !== "undefined") ? Chiaki.settings.selectedControllerGUIDSaved : "";
+                                    if (savedGuid && savedGuid.length) {
+                                        var guids = [""];
+                                        if (typeof Chiaki.controllers !== "undefined") {
+                                            for (var j = 0; j < Chiaki.controllers.length; ++j)
+                                                guids.push(Chiaki.controllers[j].guid ? Chiaki.controllers[j].guid : "");
+                                        }
+                                        if (guids.indexOf(savedGuid) === -1) {
+                                            // Shorten GUID for display; show a marker that this is the saved, but currently disconnected controller
+                                            var shortGuid = savedGuid.length > 10 ? savedGuid.substring(0, 10) + "…" : savedGuid;
+                                            list.push(qsTr("(saved:disconnected)") + " " + shortGuid);
+                                        }
+                                    }
+
+                                    return list;
+                                })()
 
                                 // compute currentIndex from stored GUID (falls back to 0 = "Any"). Build GUID list on demand
                                 currentIndex: (typeof Chiaki.settings !== "undefined" && typeof Chiaki.settings.selectedControllerGUIDSaved !== "undefined") ?
@@ -2211,51 +2232,39 @@ DialogView {
                                         if (typeof Chiaki.controllers === "undefined") return 0;
                                         var guids = [""];
                                         for (var i = 0; i < Chiaki.controllers.length; ++i) guids.push(Chiaki.controllers[i].guid ? Chiaki.controllers[i].guid : "");
-                                        return Math.max(0, guids.indexOf(Chiaki.settings.selectedControllerGUIDSaved));
+
+                                        var saved = Chiaki.settings.selectedControllerGUIDSaved ? Chiaki.settings.selectedControllerGUIDSaved : "";
+                                        if (saved && saved.length && guids.indexOf(saved) === -1) {
+                                            // append the saved guid to mirror model above
+                                            guids.push(saved);
+                                        }
+
+                                        return Math.max(0, guids.indexOf(saved));
                                     })() : 0
 
                                 onActivated: (index) => {
                                     if (typeof Chiaki.settings !== "undefined") {
                                         // compute GUID from current controllers list (index 0 = Any -> -1)
                                         var guid = "";
-                                        if (index > 0 && typeof Chiaki.controllers !== "undefined" && Chiaki.controllers.length >= index)
-                                            guid = Chiaki.controllers[index - 1].guid ? Chiaki.controllers[index - 1].guid : "";
-                                        Chiaki.settings.selectedControllerGUID = guid;
-                                        Chiaki.settings.selectedControllerIndex = (index > 0) ? index - 1 : -1;
-                                    }
-                                }
-                            }
-
-                            C.Button {
-                                id: controllersSelectedSave
-                                text: qsTr("Save")
-                                Material.roundedScale: Material.SmallScale
-                                onClicked: {
-                                    // save the currently-selected controller GUID permanently
-                                    try {
-                                        var selIndex = (typeof controllersSelection !== "undefined" && typeof controllersSelection.currentIndex === "number") ? controllersSelection.currentIndex : 0;
-                                        if (selIndex < 0) selIndex = 0;
-                                        var guid = "";
-                                        if (selIndex > 0 && typeof Chiaki.controllers !== "undefined" && Chiaki.controllers.length >= selIndex)
-                                            guid = Chiaki.controllers[selIndex - 1].guid ? Chiaki.controllers[selIndex - 1].guid : "";
-
-                                        if (typeof Chiaki !== "undefined" && typeof Chiaki.settings !== "undefined") {
-                                            Chiaki.settings.selectedControllerGUIDSaved = guid;
-                                        } else {
-                                            // If we can't save, show a message but continue to show the dialog
-                                            console.warn("Chiaki.settings is undefined - cannot persist selectedControllerGUIDSaved");
+                                        if (index > 0 && typeof Chiaki.controllers !== "undefined") {
+                                            // if index points inside the controllers array
+                                            if (index <= Chiaki.controllers.length)
+                                                guid = Chiaki.controllers[index - 1].guid ? Chiaki.controllers[index - 1].guid : "";
+                                            else
+                                                // index points to the appended saved GUID entry; reconstruct the saved GUID
+                                                guid = Chiaki.settings.selectedControllerGUIDSaved ? Chiaki.settings.selectedControllerGUIDSaved : "";
                                         }
 
-                                        // show popup with the value (fallback to "(empty)")
-                                        var msg = guid && guid.length ? guid : qsTr("(empty)");
-                                        // use arrow callback to avoid scope issues; empty callback is fine for informational dialog
-                                        root.showConfirmDialog(qsTr("Saved Controller GUID"), msg, () => {
-                                        });
-                                    } catch (e) {
-                                        // If something unexpected happened, still show an error message
-                                        console.error(e);
-                                        root.showConfirmDialog(qsTr("Saved Controller GUID"), qsTr("(error saving)") + "\n" + e.toString(), () => {
-                                        });
+                                        // persist selection immediately
+                                        Chiaki.settings.selectedControllerGUID = guid;
+                                        Chiaki.settings.selectedControllerIndex = (index > 0 && typeof Chiaki.controllers !== "undefined" && index <= Chiaki.controllers.length) ? index - 1 : -1;
+
+                                        // also update the permanently-saved GUID so the selection is remembered across restarts
+                                        try {
+                                            Chiaki.settings.selectedControllerGUIDSaved = guid;
+                                        } catch (e) {
+                                            console.warn("Chiaki.settings is undefined or cannot persist selectedControllerGUIDSaved", e);
+                                        }
                                     }
                                 }
                             }
