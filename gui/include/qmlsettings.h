@@ -60,8 +60,6 @@ class QmlSettings : public QObject
     Q_PROPERTY(QString autoConnectMac READ autoConnectMac WRITE setAutoConnectMac NOTIFY autoConnectMacChanged)
     Q_PROPERTY(bool allowJoystickBackgroundEvents READ allowJoystickBackgroundEvents WRITE setAllowJoystickBackgroundEvents NOTIFY allowJoystickBackgroundEventsChanged)
     Q_PROPERTY(QString selectedControllerGUIDSaved READ selectedControllerGUIDSaved WRITE setSelectedControllerGUIDSaved NOTIFY selectedControllerGUIDSavedChanged)
-    Q_PROPERTY(QString selectedControllerGUID READ selectedControllerGUID WRITE setSelectedControllerGUID NOTIFY selectedControllerGUIDChanged)
-    Q_PROPERTY(int selectedControllerIndex READ selectedControllerIndex WRITE setSelectedControllerIndex NOTIFY selectedControllerIndexChanged)
     Q_PROPERTY(QString logDirectory READ logDirectory CONSTANT)
     Q_PROPERTY(QStringList availableDecoders READ availableDecoders CONSTANT)
     Q_PROPERTY(QStringList availableAudioInDevices READ availableAudioInDevices NOTIFY audioDevicesChanged)
@@ -213,12 +211,6 @@ public:
     // Selected controller (transient and saved)
     QString selectedControllerGUIDSaved() const;
     void setSelectedControllerGUIDSaved(const QString &guid);
-
-    QString selectedControllerGUID() const;
-    void setSelectedControllerGUID(const QString &guid);
-
-    int selectedControllerIndex() const;
-    void setSelectedControllerIndex(int index);
 
     bool startMicUnmuted() const;
     void setStartMicUnmuted(bool startMicUnmuted);
@@ -632,8 +624,6 @@ signals:
     void autoConnectMacChanged();
     void audioDevicesChanged();
     void selectedControllerGUIDSavedChanged();
-    void selectedControllerGUIDChanged();
-    void selectedControllerIndexChanged();
     void registeredHostsChanged();
     void psnAuthTokenChanged();
     void psnRefreshTokenChanged();
@@ -722,9 +712,6 @@ signals:
 
 private:
     Settings *settings;
-    // lightweight QML-side state for transient selection
-    QString m_selectedControllerGUID;
-    int m_selectedControllerIndex = -1;
     // cached audio device lists filled by refreshAudioDevices()
     QStringList audio_in_devices;
     QStringList audio_out_devices;

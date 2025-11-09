@@ -306,32 +306,6 @@ void QmlSettings::setSelectedControllerGUIDSaved(const QString &guid)
     emit selectedControllerGUIDSavedChanged();
 }
 
-QString QmlSettings::selectedControllerGUID() const
-{
-    return m_selectedControllerGUID;
-}
-
-void QmlSettings::setSelectedControllerGUID(const QString &guid)
-{
-    if (m_selectedControllerGUID == guid)
-        return;
-    m_selectedControllerGUID = guid;
-    emit selectedControllerGUIDChanged();
-}
-
-int QmlSettings::selectedControllerIndex() const
-{
-    return m_selectedControllerIndex;
-}
-
-void QmlSettings::setSelectedControllerIndex(int index)
-{
-    if (m_selectedControllerIndex == index)
-        return;
-    m_selectedControllerIndex = index;
-    emit selectedControllerIndexChanged();
-}
-
 int QmlSettings::fpsLocalPS4() const
 {
     return settings->GetFPSLocalPS4();

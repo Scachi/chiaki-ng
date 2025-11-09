@@ -2217,9 +2217,7 @@ DialogView {
                                                 guids.push(Chiaki.controllers[j].guid ? Chiaki.controllers[j].guid : "");
                                         }
                                         if (guids.indexOf(savedGuid) === -1) {
-                                            // Shorten GUID for display; show a marker that this is the saved, but currently disconnected controller
-                                            var shortGuid = savedGuid.length > 10 ? savedGuid.substring(0, 10) + "…" : savedGuid;
-                                            list.push(qsTr("(saved:disconnected)") + " " + shortGuid);
+                                            list.push(qsTr("(saved:disconnected)") + " " + savedGuid);
                                         }
                                     }
 
@@ -2254,10 +2252,6 @@ DialogView {
                                                 // index points to the appended saved GUID entry; reconstruct the saved GUID
                                                 guid = Chiaki.settings.selectedControllerGUIDSaved ? Chiaki.settings.selectedControllerGUIDSaved : "";
                                         }
-
-                                        // persist selection immediately
-                                        Chiaki.settings.selectedControllerGUID = guid;
-                                        Chiaki.settings.selectedControllerIndex = (index > 0 && typeof Chiaki.controllers !== "undefined" && index <= Chiaki.controllers.length) ? index - 1 : -1;
 
                                         // also update the permanently-saved GUID so the selection is remembered across restarts
                                         try {
