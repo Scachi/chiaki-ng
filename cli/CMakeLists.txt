@@ -20,8 +20,3 @@ install(TARGETS chiaki-cli)
 add_executable(chiaki-control src/control.c)
 target_link_libraries(chiaki-control chiaki-lib)
 install(TARGETS chiaki-control)
-
-# Minimal CMakeLists for the small regread tool.
-add_executable(chiaki-regread src/regread.c)
-target_link_libraries(chiaki-regread)
-install(TARGETS chiaki-regread)
