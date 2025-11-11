@@ -1,4 +1,3 @@
-
 set(SOURCE
 		include/chiaki-cli.h
 		src/discover.c
@@ -16,3 +15,13 @@ endif()
 add_executable(chiaki-cli src/main.c)
 target_link_libraries(chiaki-cli chiaki-cli-lib)
 install(TARGETS chiaki-cli)
+
+# Add lightweight control-only client
+add_executable(chiaki-control src/control.c)
+target_link_libraries(chiaki-control chiaki-lib)
+install(TARGETS chiaki-control)
+
+# Minimal CMakeLists for the small regread tool.
+add_executable(chiaki-regread src/regread.c)
+target_link_libraries(chiaki-regread)
+install(TARGETS chiaki-regread)

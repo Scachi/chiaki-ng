@@ -1,0 +1,12 @@
+Build & run instructions
+Build (from project root; adapt to your chosen generator and environment):
+Example with CMake/Ninja (MSYS2 Mingw64 or other environments where chiaki-lib is built and available):
+!! built from main directory NOT cli/ !!
+cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target chiaki-control
+Run:
+chiaki-control <host> <regist_key_hex> <morning_hex> [--ps5]
+Example:
+cd /c/Users/scachi/Documents/T2/_Chiaki-ng
+build\\cli\\chiaki-control.exe 192.168.178.26 40004200790074006500410072007200 40004200790074006500410072007200 --ps5
+Replace host/regist_key/morning with values appropriate for your registered console.
