@@ -129,6 +129,12 @@ int main(int argc, char **argv)
 
     chiaki_log_init(&logg, CHIAKI_LOG_ALL & ~CHIAKI_LOG_VERBOSE, chiaki_log_cb_print, NULL);
 
+    ChiakiErrorCode lib_err = chiaki_lib_init();
+    if (lib_err != CHIAKI_ERR_SUCCESS) {
+        fprintf(stderr, "chiaki_lib_init failed: %s\n", chiaki_error_string(lib_err));
+        return 2;
+    }
+
     ChiakiConnectInfo ci = {};
     ci.ps5 = is_ps5;
     ci.host = host;
@@ -145,17 +151,22 @@ int main(int argc, char **argv)
     if(!hex_to_bytes(regist_hex, (uint8_t*)ci.regist_key, sizeof(ci.regist_key)))
     {
         fprintf(stderr, "regist_key must be %zu hex chars\n", sizeof(ci.regist_key)*2);
-        return 2;
+        //return 2;
     }
     if(!hex_to_bytes(morning_hex, ci.morning, sizeof(ci.morning)))
     {
         fprintf(stderr, "morning must be %zu hex chars\n", sizeof(ci.morning)*2);
-        return 2;
+        //return 2;
     }
 
-    if (chiaki_session_init(&session, &ci, &logg) != CHIAKI_ERR_SUCCESS)
+    ChiakiErrorCode err = chiaki_session_init(&session, &ci, &logg);
+    if (err != CHIAKI_ERR_SUCCESS) {
+        /* Print readable error to stderr. chiaki_error_string should return a const char* */
+        fprintf(stderr, "chiaki_session_init failed: %s\n", chiaki_error_string(err));
+    }
+
+    if (err != CHIAKI_ERR_SUCCESS)
     {
-        fprintf(stderr, "chiaki_session_init failed\n");
         return 3;
     }
     chiaki_session_set_event_cb(&session, event_cb, NULL);
@@ -265,4 +276,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
