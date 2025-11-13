@@ -1,0 +1,91 @@
+install msys2
+
+#install packages from mingw64 msys2 prompt:
+pacman -S mingw64/mingw-w64-x86_64-gcc mingw64/mingw-w64-x86_64-cmake mingw64/mingw-w64-x86_64-gdb
+pacman -S mingw64/mingw-w64-x86_64-meson
+pacman -S msys/git
+pacman -S mingw64/mingw-w64-x86_64-make
+
+
+cd /c/Users/scachi/Documents/T2/_Chiaki-ng
+
+# try to fix vulkan problem:
+pacman -S mingw64/mingw-w64-x86_64-glfw mingw64/mingw-w64-x86_64-python-glfw
+pacman -S mingw64/mingw-w64-x86_64-SDL2_image
+
+# build libplacebo, from main dir
+sh scripts/build-libplacebo-windows.sh
+# run through msys2ming64 prompt
+cd libplacebo
+meson setup --prefix /mingw64 -Dxxhash=disabled ./build
+ninja -Cbuild || exit 1
+ninja -Cbuild install || exit 1
+
+# install qt6 via msys
+pacman -S mingw64/mingw-w64-x86_64-qt6-base
+pacman -S mingw64/mingw-w64-x86_64-qt6-declarative
+pacman -S mingw64/mingw-w64-x86_64-qt6-svg
+pacman -S mingw-w64-x86_64-qt6-webview
+pacman -S mingw64/mingw-w64-x86_64-qt6-declarative-debug ?  !!!!!!!!!! trying to fix Failed to find required Qt component "WebEngineQuick".
+#### !!!! webengine only build with msvc ??
+
+# ffmpeg requires protobuf , zip, unzip
+pacman -S mingw64/mingw-w64-x86_64-protobuf
+pacman -S mingw64/mingw-w64-x86_64-minizip
+pacman -S mingw64/mingw-w64-x86_64-7zip
+pacman -S zip unzip
+
+pacman -S mingw64/mingw-w64-x86_64-diffutils
+pacman -S mingw64/mingw-w64-x86_64-nasm
+
+
+### FFMPEG
+# using ZIP:
+"""
+curl -LO https://github.com/streetpea/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-win64-gpl-shared-7.1.zip
+unzip ffmpeg-n7.1-latest-win64-gpl-shared-7.1.zip
+cp -a "ffmpeg-n7.1-latest-win64-gpl-shared-7.1/bin/." /mingw64/bin
+cp -a "ffmpeg-n7.1-latest-win64-gpl-shared-7.1/include/." /mingw64/include
+cp -a "ffmpeg-n7.1-latest-win64-gpl-shared-7.1/lib/." /mingw64/lib
+
+pacman -S mingw64/mingw-w64-x86_64-opus
+pacman -S mingw64/mingw-w64-x86_64-SDL2
+pacman -S mingw64/mingw-w64-x86_64-json-c
+pacman -S mingw64/mingw-w64-x86_64-fast_float
+pacman -S mingw64/mingw-w64-x86_64-shaderc
+pacman -S mingw64/mingw-w64-x86_64-speexdsp
+pacman -S mingw64/mingw-w64-x86_64-spirv-cross
+pacman -S mingw64/mingw-w64-x86_64-fftw
+pacman -S mingw64/mingw-w64-x86_64-lcms2
+pacman -S mingw64/mingw-w64-x86_64-libdovi
+pacman -S mingw64/mingw-w64-x86_64-miniupnpc
+pacman -S mingw64/mingw-w64-x86_64-hidapi
+
+# remove QT::Private from file
+
+pacman -S mingw-w64-x86_64-python
+pacman -S mingw-w64-x86_64-python-pip
+pacman -S mingw-w64-x86_64-python-psutil
+pacman -S mingw-w64-x86_64-python-jinja
+pacman -S mingw64/mingw-w64-x86_64-python-grpcio-tools
+
+pacman -S mingw64/mingw-w64-x86_64-openldap ? .. doesn't fix ldap bind lib issue
+# C:\Users\scachi\Documents\T2\_Chiaki-ng\lib\CMakeLists.txt, added to bottom
+"""
+target_link_libraries(chiaki-lib wldap32)
+"""
+
+# curl third party
+cmake .
+cmake --build .
+
+# chiaki
+cd /c/Users/scachi/Documents/T2/_Chiaki-ng
+cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCHIAKI_ENABLE_CLI=OFF
+cmake --build build --config Release --clean-first --target chiaki && sh make_deploy.sh
+
+# packaging
+sh make_deploy.sh
+
+# settings:
+HKCU\Software\Chiaki\Chiaki... (main app settings)

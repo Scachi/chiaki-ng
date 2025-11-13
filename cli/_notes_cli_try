@@ -8,5 +8,14 @@ Run:
 chiaki-control <host> <regist_key_hex> <morning_hex> [--ps5]
 Example:
 cd /c/Users/scachi/Documents/T2/_Chiaki-ng
-build\\cli\\chiaki-control.exe 192.168.178.26 40004200790074006500410072007200 40004200790074006500410072007200 --ps5
+build\\cli\\chiaki-control.exe 192.168.178.26 34636238643032660000000000000000 9d2996c18ef7b9819f56eb84d0c0803b --ps5
 Replace host/regist_key/morning with values appropriate for your registered console.
+
+# qt_dump_keys
+cmake --build build --target qt_dump_keys
+build\\cli\\qt_dump_keys.exe
+
+# output:
+Host[0] nickname='PS5-576' mac='bc33292863eb'
+rp_regist_key = 34636238643032660000000000000000
+rp_key        = 9d2996c18ef7b9819f56eb84d0c0803b

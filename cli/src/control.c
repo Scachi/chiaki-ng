@@ -27,7 +27,8 @@ static bool running = true;
 
 static void print_usage(const char *prog)
 {
-    printf("Usage: %s <host> <regist_key_hex> <morning_hex> [--ps5]\n", prog);
+	printf("Usage: %s <host> <rpregistkey> <rpkey> [--ps5]\n", prog);
+    printf("Usage: %s <host> <regist_key_> <morning_hex_16bytes> [--ps5]\n", prog);
     printf("Examples:\n");
     printf("  %s 192.168.1.100 00112233445566778899aabbccddeeff 00112233445566778899aabbccddeeff --ps5\n", prog);
 }
