@@ -565,12 +565,13 @@ static ChiakiErrorCode ctrl_message_send(ChiakiCtrl *ctrl, uint16_t type, const 
 	if(ctrl->session->rudp)
 	{
 		uint8_t buf_size = 8 + payload_size;
-		uint8_t buf[buf_size];
+		uint8_t *buf = malloc(buf_size);
 		memcpy(buf, header, 8);
 		if(enc)
 			memcpy(buf + 8, enc, payload_size);
 		ChiakiErrorCode err;
 		err = chiaki_rudp_send_ctrl_message(ctrl->session->rudp, buf, buf_size);
+		free(buf);
 		if(err != CHIAKI_ERR_SUCCESS)
 		{
 			CHIAKI_LOGE(ctrl->session->log, "Failed to send Ctrl Message");
@@ -1062,10 +1063,11 @@ static ChiakiErrorCode ctrl_connect(ChiakiCtrl *ctrl)
 			goto error;
 		}
 		size_t init_response_size = message.data_size - 8;
-		uint8_t init_response[init_response_size];
+		uint8_t *init_response = malloc(init_response_size);
 		memcpy(init_response, message.data + 8, init_response_size);
 		chiaki_rudp_message_pointers_free(&message);
 		err = chiaki_rudp_send_recv(session->rudp, &message, init_response, init_response_size, 0, COOKIE_REQUEST, COOKIE_RESPONSE, 2, 3);
+		free(init_response);
 		if(err != CHIAKI_ERR_SUCCESS)
 		{
 			CHIAKI_LOGE(session->log, "CTRL - Failed to pass rudp cookie");

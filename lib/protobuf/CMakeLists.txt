@@ -1,3 +1,15 @@
+# If pre-generated nanopb/protobuf outputs are present in the source tree, use them and skip generation.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/takion.pb.c" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/takion.pb.h")
+    message(STATUS "Using pre-generated takion.pb.c and takion.pb.h from source directory; protoc not required.")
+    set(SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/takion.pb.c")
+    set(HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/takion.pb.h")
+    # The generated headers live in the source dir
+    set(CHIAKI_LIB_PROTO_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" PARENT_SCOPE)
+
+    # Provide a no-op target so dependencies still work
+    add_custom_target(chiaki-pb)
+
+else()
 
 find_program(PROTOC protoc)
 if(NOT PROTOC)
@@ -28,3 +40,5 @@ set(CHIAKI_LIB_PROTO_HEADER_FILES "${HEADER_FILES}" PARENT_SCOPE)
 set(CHIAKI_LIB_PROTO_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}" PARENT_SCOPE)
 
 add_custom_target(chiaki-pb DEPENDS ${SOURCE_FILES} ${HEADER_FILES})
+
+endif()

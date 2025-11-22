@@ -3102,7 +3102,7 @@ static ChiakiErrorCode http_send_session_message(Session *session, SessionMessag
         short_message_serialize(session, message, &payload_str, &payload_len);
     else
         session_message_serialize(session, message, &payload_str, &payload_len);
-    char msg_buf[sizeof(session_message_envelope_fmt) * 2 + payload_len];
+    char *msg_buf = malloc(sizeof(session_message_envelope_fmt) * 2 + payload_len);
     snprintf(
         msg_buf, sizeof(msg_buf), session_message_envelope_fmt,
         payload_str, session->account_id, console_uid_str,
@@ -3613,11 +3613,11 @@ static ChiakiErrorCode check_candidates(
 
     size_t extra_addresses_used = 0;
     // Set up addresses for each candidate + extras (use sockaddr_storage and cast bc needs to be at least that big if we get ipv6)
-    struct sockaddr_storage addrs[num_candidates + EXTRA_CANDIDATE_ADDRESSES];
-    socklen_t lens[num_candidates + EXTRA_CANDIDATE_ADDRESSES];
-    Candidate candidates[num_candidates + EXTRA_CANDIDATE_ADDRESSES];
+    struct sockaddr_storage *addrs = malloc(num_candidates + EXTRA_CANDIDATE_ADDRESSES);
+    socklen_t *lens = malloc(num_candidates + EXTRA_CANDIDATE_ADDRESSES);
+    Candidate *candidates = malloc(num_candidates + EXTRA_CANDIDATE_ADDRESSES);
     memcpy(candidates, candidates_received, num_candidates * sizeof(Candidate));
-    int responses_received[num_candidates + EXTRA_CANDIDATE_ADDRESSES];
+    int *responses_received = malloc(num_candidates + EXTRA_CANDIDATE_ADDRESSES);
     fd_set fds;
     FD_ZERO(&fds);
     if(!CHIAKI_SOCKET_IS_INVALID(session->ipv4_sock))
@@ -4514,7 +4514,7 @@ static json_object* session_message_get_payload(ChiakiLog *log, json_object *ses
         // Insert empty object as key for localPeerAddr key
         size_t prefix_len = peeraddr_end - json;
         size_t suffix_len = strlen(peeraddr_end);
-        char fixed_json[strlen(json) + 3]; // {} + \0
+        char *fixed_json = malloc(strlen(json) + 3); // {} + \0
         memset(fixed_json, 0, sizeof(fixed_json));
         strncpy(fixed_json, json, prefix_len);
         fixed_json[prefix_len] = '{';

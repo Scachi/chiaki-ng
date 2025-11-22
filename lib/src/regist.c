@@ -287,7 +287,7 @@ static void *regist_thread_func(void *user)
 			goto fail;
 		}
 		size_t init_response_size = message.data_size - 8;
-		uint8_t init_response[init_response_size];
+		uint8_t *init_response = malloc(init_response_size);
 		memcpy(init_response, message.data + 8, init_response_size);
 		chiaki_rudp_message_pointers_free(&message);
 		err = chiaki_rudp_send_recv(regist->info.rudp, &message, init_response, init_response_size, 0, COOKIE_REQUEST, COOKIE_RESPONSE, 2, 3);
