@@ -122,7 +122,7 @@ add_dependencies(chiaki-lib chiaki-pb)
 set_target_properties(chiaki-lib PROPERTIES OUTPUT_NAME chiaki)
 
 if(WIN32)
-	target_link_libraries(chiaki-lib wsock32 ws2_32 bcrypt iphlpapi)
+	target_link_libraries(chiaki-lib wsock32 ws2_32 bcrypt iphlpapi Crypt32)
 endif()
 
 if(APPLE)
@@ -188,4 +188,29 @@ endif()
 if(CHIAKI_ENABLE_TESTS)
 	add_executable(holepunch-test include/chiaki/remote/holepunch.h src/remote/holepunch-test.c)
 	target_link_libraries(holepunch-test chiaki-lib)
+endif()
+# On Windows, merge static libraries into chiaki.lib for a self-contained library
+if(WIN32)
+	set(CHIAKI_MERGE_LIBS "")
+	if(NOT CHIAKI_USE_SYSTEM_CURL)
+		list(APPEND CHIAKI_MERGE_LIBS $<TARGET_FILE:CURL::libcurl>)
+	endif()
+	if(NOT CHIAKI_USE_SYSTEM_JERASURE)
+		list(APPEND CHIAKI_MERGE_LIBS $<TARGET_FILE:jerasure> $<TARGET_FILE:gf_complete>)
+	endif()
+	if(NOT CHIAKI_USE_SYSTEM_NANOPB)
+		list(APPEND CHIAKI_MERGE_LIBS $<TARGET_FILE:protobuf-nanopb-static>)
+	endif()
+	# Always merge OpenSSL crypto library for self-contained builds
+	if(TARGET OpenSSL::Crypto)
+		list(APPEND CHIAKI_MERGE_LIBS $<TARGET_FILE:OpenSSL::Crypto>)
+	endif()
+	if(CHIAKI_MERGE_LIBS)
+		add_custom_command(TARGET chiaki-lib POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E rename $<TARGET_FILE:chiaki-lib> $<TARGET_FILE_DIR:chiaki-lib>/chiaki_base.lib
+			COMMAND lib.exe /NOLOGO /OUT:$<TARGET_FILE:chiaki-lib> $<TARGET_FILE_DIR:chiaki-lib>/chiaki_base.lib ${CHIAKI_MERGE_LIBS}
+			COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE_DIR:chiaki-lib>/chiaki_base.lib
+			COMMENT "Merging static libraries into chiaki.lib"
+		)
+	endif()
 endif()
