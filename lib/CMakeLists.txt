@@ -148,6 +148,11 @@ endif()
 find_package(PkgConfig REQUIRED)
 pkg_search_module(MINIUPNPC REQUIRED miniupnpc IMPORTED_TARGET)
 target_link_libraries(chiaki-lib PkgConfig::MINIUPNPC)
+# For static linking on Windows, miniupnpc headers need MINIUPNP_STATICLIB defined
+# to avoid __declspec(dllimport) on function declarations
+if(WIN32)
+	target_compile_definitions(chiaki-lib PRIVATE MINIUPNP_STATICLIB)
+endif()
 
 target_link_libraries(chiaki-lib CURL::libcurl)
 
@@ -205,12 +210,34 @@ if(WIN32)
 	if(TARGET OpenSSL::Crypto)
 		list(APPEND CHIAKI_MERGE_LIBS $<TARGET_FILE:OpenSSL::Crypto>)
 	endif()
+	# Merge json-c and miniupnpc from vcpkg installed directory
+	if(DEFINED VCPKG_INSTALLED_DIR AND DEFINED VCPKG_TARGET_TRIPLET)
+		set(_vcpkg_lib_dir "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib")
+		message(STATUS "Looking for json-c.lib and libminiupnpc.lib in: ${_vcpkg_lib_dir}")
+		if(EXISTS "${_vcpkg_lib_dir}/json-c.lib")
+			list(APPEND CHIAKI_MERGE_LIBS "${_vcpkg_lib_dir}/json-c.lib")
+			message(STATUS "  -> Found json-c.lib, will merge into chiaki.lib")
+		else()
+			message(STATUS "  -> json-c.lib NOT found at ${_vcpkg_lib_dir}/json-c.lib")
+		endif()
+		if(EXISTS "${_vcpkg_lib_dir}/libminiupnpc.lib")
+			list(APPEND CHIAKI_MERGE_LIBS "${_vcpkg_lib_dir}/libminiupnpc.lib")
+			message(STATUS "  -> Found libminiupnpc.lib, will merge into chiaki.lib")
+		else()
+			message(STATUS "  -> libminiupnpc.lib NOT found at ${_vcpkg_lib_dir}/libminiupnpc.lib")
+		endif()
+	else()
+		message(STATUS "VCPKG variables not defined - VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR} VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}")
+	endif()
 	if(CHIAKI_MERGE_LIBS)
+		message(STATUS "Libraries to merge into chiaki.lib: ${CHIAKI_MERGE_LIBS}")
 		add_custom_command(TARGET chiaki-lib POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E rename $<TARGET_FILE:chiaki-lib> $<TARGET_FILE_DIR:chiaki-lib>/chiaki_base.lib
 			COMMAND lib.exe /NOLOGO /OUT:$<TARGET_FILE:chiaki-lib> $<TARGET_FILE_DIR:chiaki-lib>/chiaki_base.lib ${CHIAKI_MERGE_LIBS}
 			COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE_DIR:chiaki-lib>/chiaki_base.lib
 			COMMENT "Merging static libraries into chiaki.lib"
 		)
+	else()
+		message(STATUS "No libraries to merge into chiaki.lib")
 	endif()
 endif()
