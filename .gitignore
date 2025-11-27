@@ -21,6 +21,7 @@ appdir
 /sdl2-*
 /protoc*
 /openssl*
+vcpkg_installed
 scripts/chiaki-ng.iss
 scripts/Output
 .vs
