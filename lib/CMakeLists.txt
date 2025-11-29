@@ -122,71 +122,71 @@ add_dependencies(chiaki-lib chiaki-pb)
 set_target_properties(chiaki-lib PROPERTIES OUTPUT_NAME chiaki)
 
 if(WIN32)
-	target_link_libraries(chiaki-lib wsock32 ws2_32 bcrypt iphlpapi Crypt32)
+	target_link_libraries(chiaki-lib PUBLIC wsock32 ws2_32 bcrypt iphlpapi Crypt32)
 endif()
 
 if(APPLE)
-	target_link_libraries(chiaki-lib "-framework CoreServices")
+	target_link_libraries(chiaki-lib PRIVATE "-framework CoreServices")
 endif()
 
 target_include_directories(chiaki-lib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 find_package(Threads REQUIRED)
-target_link_libraries(chiaki-lib Threads::Threads)
+target_link_libraries(chiaki-lib PUBLIC Threads::Threads)
 
 if (CHIAKI_IS_SWITCH)
 	find_library(JSONC_LIB json-c ${PORTLIBS}/lib)
-	target_link_libraries(chiaki-lib ${JSONC_LIB})
+	target_link_libraries(chiaki-lib PRIVATE ${JSONC_LIB})
 	target_include_directories(chiaki-lib PUBLIC "${PORTLIBS}/include/json-c")
 else()
 	find_package(PkgConfig REQUIRED)
 	pkg_search_module(json-c REQUIRED json-c IMPORTED_TARGET)
 	target_include_directories(chiaki-lib PRIVATE ${json-c_INCLUDE_DIRS})
-	target_link_libraries(chiaki-lib PkgConfig::json-c)
+	target_link_libraries(chiaki-lib PRIVATE PkgConfig::json-c)
 endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(MINIUPNPC REQUIRED miniupnpc IMPORTED_TARGET)
-target_link_libraries(chiaki-lib PkgConfig::MINIUPNPC)
+target_link_libraries(chiaki-lib PRIVATE PkgConfig::MINIUPNPC)
 # For static linking on Windows, miniupnpc headers need MINIUPNP_STATICLIB defined
 # to avoid __declspec(dllimport) on function declarations
 if(WIN32)
 	target_compile_definitions(chiaki-lib PRIVATE MINIUPNP_STATICLIB)
 endif()
 
-target_link_libraries(chiaki-lib CURL::libcurl)
+target_link_libraries(chiaki-lib PRIVATE CURL::libcurl)
 
 if(CHIAKI_LIB_ENABLE_MBEDTLS)
 	if(CHIAKI_LIB_MBEDTLS_EXTERNAL_PROJECT)
-		target_link_libraries(chiaki-lib mbedtls mbedx509 mbedcrypto)
+		target_link_libraries(chiaki-lib PRIVATE mbedtls mbedx509 mbedcrypto)
 	else()
 		# provided by mbedtls-static (mbedtls-devel)
 		find_library(MBEDTLS mbedtls)
 		find_library(MBEDX509 mbedx509)
 		find_library(MBEDCRYPTO mbedcrypto)
-		target_link_libraries(chiaki-lib ${MBEDTLS} ${MBEDX509} ${MBEDCRYPTO})
+		target_link_libraries(chiaki-lib PRIVATE ${MBEDTLS} ${MBEDX509} ${MBEDCRYPTO})
 	endif()
 elseif(CHIAKI_LIB_OPENSSL_EXTERNAL_PROJECT)
-	target_link_libraries(chiaki-lib OpenSSL_Crypto)
+	target_link_libraries(chiaki-lib PRIVATE OpenSSL_Crypto OpenSSL_SSL)
 else()
 	# default
 	find_package(OpenSSL REQUIRED)
-	target_link_libraries(chiaki-lib OpenSSL::Crypto)
+	target_link_libraries(chiaki-lib PRIVATE OpenSSL::Crypto OpenSSL::SSL)
 endif()
 
-target_link_libraries(chiaki-lib Nanopb::nanopb)
-target_link_libraries(chiaki-lib Jerasure::Jerasure)
+target_link_libraries(chiaki-lib PRIVATE Nanopb::nanopb)
+target_link_libraries(chiaki-lib PRIVATE Jerasure::Jerasure)
 
 if(CHIAKI_ENABLE_FFMPEG_DECODER)
-	target_link_libraries(chiaki-lib FFMPEG::avcodec FFMPEG::avutil)
+	target_link_libraries(chiaki-lib PRIVATE FFMPEG::avcodec FFMPEG::avutil)
 endif()
 
 if(CHIAKI_ENABLE_PI_DECODER)
-	target_link_libraries(chiaki-lib ILClient::ILClient)
+	target_link_libraries(chiaki-lib PRIVATE ILClient::ILClient)
 endif()
 
 if(CHIAKI_LIB_ENABLE_OPUS)
-	target_link_libraries(chiaki-lib ${Opus_LIBRARIES})
+	target_link_libraries(chiaki-lib PRIVATE ${Opus_LIBRARIES})
 endif()
 
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fanalyzer")
@@ -206,9 +206,12 @@ if(WIN32)
 	if(NOT CHIAKI_USE_SYSTEM_NANOPB)
 		list(APPEND CHIAKI_MERGE_LIBS $<TARGET_FILE:protobuf-nanopb-static>)
 	endif()
-	# Always merge OpenSSL crypto library for self-contained builds
+	# Always merge OpenSSL libraries for self-contained builds
 	if(TARGET OpenSSL::Crypto)
 		list(APPEND CHIAKI_MERGE_LIBS $<TARGET_FILE:OpenSSL::Crypto>)
+	endif()
+	if(TARGET OpenSSL::SSL)
+		list(APPEND CHIAKI_MERGE_LIBS $<TARGET_FILE:OpenSSL::SSL>)
 	endif()
 	# Merge json-c and miniupnpc from vcpkg installed directory
 	if(DEFINED VCPKG_INSTALLED_DIR AND DEFINED VCPKG_TARGET_TRIPLET)
@@ -233,9 +236,9 @@ if(WIN32)
 		message(STATUS "Libraries to merge into chiaki.lib: ${CHIAKI_MERGE_LIBS}")
 		add_custom_command(TARGET chiaki-lib POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E rename $<TARGET_FILE:chiaki-lib> $<TARGET_FILE_DIR:chiaki-lib>/chiaki_base.lib
-			COMMAND lib.exe /NOLOGO /OUT:$<TARGET_FILE:chiaki-lib> $<TARGET_FILE_DIR:chiaki-lib>/chiaki_base.lib ${CHIAKI_MERGE_LIBS}
+			COMMAND lib.exe /NOLOGO /LTCG /OUT:$<TARGET_FILE:chiaki-lib> $<TARGET_FILE_DIR:chiaki-lib>/chiaki_base.lib ${CHIAKI_MERGE_LIBS}
 			COMMAND ${CMAKE_COMMAND} -E remove $<TARGET_FILE_DIR:chiaki-lib>/chiaki_base.lib
-			COMMENT "Merging static libraries into chiaki.lib"
+			COMMENT "Merging static libraries into chiaki.lib with link-time code generation"
 		)
 	else()
 		message(STATUS "No libraries to merge into chiaki.lib")
