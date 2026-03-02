@@ -16,15 +16,6 @@
 ::   rmdir /s /q vcpkg_installed
 :: ============================================================================
 
-set "CONDA_ACTIVATE=C:\Users\scachi\Miniconda3\Scripts\activate.bat"
-if exist "%CONDA_ACTIVATE%" (
-    call "%CONDA_ACTIVATE%" cv
-    echo Activated conda env 'cv'
-) else (
-    echo WARNING: conda activate script not found at %CONDA_ACTIVATE%
-)
-
-
 setlocal enabledelayedexpansion
 
 :: Find Visual Studio
@@ -41,6 +32,21 @@ if not exist "%VS_PATH%\VC\Auxiliary\Build\vcvarsall.bat" (
 echo Initializing Visual Studio environment...
 call "%VS_PATH%\VC\Auxiliary\Build\vcvarsall.bat" x64 >nul 2>&1
 
+:: python env
+set "HENV_ACTIVATE=%LOCALAPPDATA%\HeliosProject\Helios\python\InputSense-CUDA\.henv\Scripts\activate.bat"
+if exist "%HENV_ACTIVATE%" (
+    call "%HENV_ACTIVATE%"
+    echo [INFO] Activated helios python uv env %HENV_ACTIVATE%
+) else (
+    set "CONDA_ACTIVATE=%USERPROFILE%\Miniconda3\Scripts\activate.bat"
+    if exist "%CONDA_ACTIVATE%" (
+        call "%CONDA_ACTIVATE%" cv
+        echo [INFO] Activated conda env 'cv'
+    ) else (
+        echo WARNING: conda activate script not found at %CONDA_ACTIVATE%
+    )
+)
+
 :: Use custom triplet: x64-windows-mixed (static by default, dynamic for OpenSSL)
 set "VCPKG_INSTALLED=%~dp0vcpkg_installed\x64-windows-mixed"
 set PATH=%VCPKG_INSTALLED%\tools\pkgconf;%PATH%;%VCPKG_INSTALLED%\tools\protobuf
@@ -55,7 +61,7 @@ echo =====================================================
 echo Using vcpkg MANIFEST MODE - dependencies from vcpkg.json
 echo vcpkg will install dependencies during CMake configure...
 echo =====================================================
-cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DOPENSSL_USE_STATIC_LIBS=OFF -DCHIAKI_ENABLE_PI_DECODER=OFF -DCHIAKI_ENABLE_FFMPEG_DECODER=OFF -DCHIAKI_ENABLE_CLI=OFF -DCHIAKI_ENABLE_GUI=OFF -DCHIAKI_ENABLE_TESTS=OFF -DCHIAKI_ENABLE_SPEEX=OFF -DCHIAKI_ENABLE_STEAM_SHORTCUT=OFF -DCHIAKI_ENABLE_STEAMDECK_NATIVE=OFF -DCHIAKI_LIB_ENABLE_OPUS=OFF -DCMAKE_TOOLCHAIN_FILE=D:/workspace/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-mixed -DVCPKG_OVERLAY_TRIPLETS=%~dp0 -DVCPKG_INSTALLED_DIR=%~dp0vcpkg_installed -DPKG_CONFIG_EXECUTABLE=%VCPKG_INSTALLED%/tools/pkgconf/pkgconf.exe
+cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DOPENSSL_USE_STATIC_LIBS=OFF -DCHIAKI_ENABLE_PI_DECODER=OFF -DCHIAKI_ENABLE_FFMPEG_DECODER=OFF -DCHIAKI_ENABLE_CLI=OFF -DCHIAKI_ENABLE_GUI=OFF -DCHIAKI_ENABLE_TESTS=OFF -DCHIAKI_ENABLE_SPEEX=OFF -DCHIAKI_ENABLE_STEAM_SHORTCUT=OFF -DCHIAKI_ENABLE_STEAMDECK_NATIVE=OFF -DCHIAKI_LIB_ENABLE_OPUS=ON -DCMAKE_TOOLCHAIN_FILE=C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-mixed -DVCPKG_OVERLAY_TRIPLETS=%~dp0 -DVCPKG_INSTALLED_DIR=%~dp0vcpkg_installed -DPKG_CONFIG_EXECUTABLE=%VCPKG_INSTALLED%/tools/pkgconf/pkgconf.exe
 
 if errorlevel 1 (
     echo.
@@ -86,7 +92,7 @@ echo.
 
 :: Verify OpenSSL DLLs (should be in x64-windows-mixed directory)
 if exist "%VCPKG_INSTALLED%\bin\libssl-3-x64.dll" (
-    echo [OK] OpenSSL DLLs (dynamic) found:
+    echo [OK] OpenSSL DLLs ^(dynamic^) found:
     echo      %VCPKG_INSTALLED%\bin\libssl-3-x64.dll
     echo      %VCPKG_INSTALLED%\bin\libcrypto-3-x64.dll
 ) else (
@@ -95,13 +101,13 @@ if exist "%VCPKG_INSTALLED%\bin\libssl-3-x64.dll" (
 
 :: Check static libs
 if exist "%VCPKG_INSTALLED%\lib\json-c.lib" (
-    echo [OK] json-c is STATIC (embedded in chiaki.lib)
+    echo [OK] json-c is STATIC ^(embedded in chiaki.lib^)
 )
 if exist "%VCPKG_INSTALLED%\lib\libprotobuf.lib" (
-    echo [OK] protobuf is STATIC (embedded in chiaki.lib)
+    echo [OK] protobuf is STATIC ^(embedded in chiaki.lib^)
 )
 if exist "%VCPKG_INSTALLED%\lib\miniupnpc.lib" (
-    echo [OK] miniupnpc is STATIC (embedded in chiaki.lib)
+    echo [OK] miniupnpc is STATIC ^(embedded in chiaki.lib^)
 )
 
 echo.
